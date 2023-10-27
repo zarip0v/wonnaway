@@ -1,4 +1,3 @@
 jsonschema
-jsonschema-specifications
 pyTelegramBotAPI
 requests
