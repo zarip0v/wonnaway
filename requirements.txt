@@ -1,4 +1,4 @@
-jsonschema==4.0.0
-jsonschema-specifications==2022.0.0
-pyTelegramBotAPI==4.14.0
-requests==2.0.0
+jsonschema
+jsonschema-specifications
+pyTelegramBotAPI
+requests
