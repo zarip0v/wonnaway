@@ -2,3 +2,5 @@ jsonschema
 pyTelegramBotAPI
 requests
 telebot
+python-dateutil
+python-dotenv
