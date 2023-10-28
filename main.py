@@ -2,6 +2,7 @@ import telebot
 import json
 import dateutil.parser
 import os
+import math
 from dotenv import load_dotenv
 from telebot import types
 from api import api
@@ -15,11 +16,13 @@ with open(os.path.dirname(full_path) + '/data/airports.json', 'r') as f:
 f.close()
 AIRPORTS = {}
 for airport in airports_clean:
-    AIRPORTS[airport["code"]] = {
-        "name": airport["name_translations"]["ru"],
-        "city_code": airport["city_code"],
-        "country_code": airport["country_code"]
-    }
+    if "railway" not in airport["name"].lower():
+        AIRPORTS[airport["code"]] = {
+            "name": airport["name_translations"]["ru"],
+            "city_code": airport["city_code"],
+            "country_code": airport["country_code"],
+            "coordinates": airport["coordinates"]
+        }
 del airport
 del airports_clean
 
@@ -297,8 +300,10 @@ def get_often(message):
                 menu(message)
         elif message.text in AIRPORTS:
             airport_item = message.text
-        elif next((code for code, airport_item in AIRPORTS.items() if airport_item["name"] == message.text), None) is not None:
-            airport_item = next((code for code, airport_item in AIRPORTS.items() if airport_item["name"] == message.text), None)
+        elif next((code for code, airport_item in AIRPORTS.items() if airport_item["name"] == message.text),
+                  None) is not None:
+            airport_item = next(
+                (code for code, airport_item in AIRPORTS.items() if airport_item["name"] == message.text), None)
         elif message.text in CITIES:
             airport_item = message.text
         elif next((code for code, city_item in CITIES.items() if city_item["name"] == message.text), None) is not None:
@@ -325,9 +330,6 @@ def get_often(message):
                 if shown == 5:
                     break
             bot.send_message(message.from_user.id, text)
-            menu(message)
-        else:
-            bot.send_message(message.from_user.id, "Что-то пошло не так")
             menu(message)
 
 
