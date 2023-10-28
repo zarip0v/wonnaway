@@ -12,6 +12,7 @@ bot = telebot.TeleBot(os.getenv('BOT_TOKEN'))
 
 AIRPORTS = data.upload_airports()
 CITIES = data.upload_cities()
+COUNTRIES = data.upload_countries()
 
 
 def menu(message):
