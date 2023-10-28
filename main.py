@@ -6,53 +6,29 @@ import math
 from dotenv import load_dotenv
 from telebot import types
 from api import api
+from data import data
 
 load_dotenv()
 bot = telebot.TeleBot(os.getenv('BOT_TOKEN'))
-full_path = os.path.realpath(__file__)
 
-with open(os.path.dirname(full_path) + '/data/airports.json', 'r') as f:
-    airports_clean = json.loads(f.read())
-f.close()
-AIRPORTS = {}
-for airport in airports_clean:
-    if "railway" not in airport["name"].lower():
-        AIRPORTS[airport["code"]] = {
-            "name": airport["name_translations"]["ru"],
-            "city_code": airport["city_code"],
-            "country_code": airport["country_code"],
-            "coordinates": airport["coordinates"]
-        }
-del airport
-del airports_clean
+AIRPORTS = data.upload_airports()
+CITIES = data.upload_cities()
 
-with open(os.path.dirname(full_path) + '/data/cities.json', 'r') as f:
-    cities_clean = json.loads(f.read())
-f.close()
-CITIES = {}
-for city in cities_clean:
-    CITIES[city["code"]] = {
-        "name": city["name_translations"]["ru"],
-        "country_code": city["country_code"]
-    }
-del city
-del cities_clean
 
-with open(os.path.dirname(full_path) + '/data/countries.json', 'r') as f:
-    countries_clean = json.loads(f.read())
-f.close()
-COUNTRIES = {}
-for country in countries_clean:
-    COUNTRIES[country["code"]] = {
-        "name": country["name_translations"]["ru"]
-    }
-with open(os.path.dirname(full_path) + '/data/country_cases.json', 'r') as f:
-    countries_clean = json.loads(f.read())
-f.close()
-for country in countries_clean.keys():
-    COUNTRIES[country]["cases"] = countries_clean[country]["cases"]
-del country
-del countries_clean
+def menu(message):
+    keyboard = types.ReplyKeyboardMarkup(True, False)
+    btn1 = types.KeyboardButton('А куда чаще смотрят билеты?')
+    btn2 = types.KeyboardButton('А куда чаще летают?')
+    btn3 = types.KeyboardButton('Знаю когда, но куда?')
+    btn4 = types.KeyboardButton('Знаю куда, но когда?')
+    btn5 = types.KeyboardButton('А что по курсу валют?')
+    keyboard.add(btn1)
+    keyboard.add(btn2)
+    keyboard.add(btn3)
+    keyboard.add(btn4)
+    keyboard.add(btn5)
+
+    bot.send_message(message.from_user.id, "Давай куда-нибудь уедем!", reply_markup=keyboard)
 
 
 @bot.message_handler(content_types=['text'])
@@ -102,22 +78,6 @@ def get_text_messages(message):
         get_currencies(message)
     else:
         menu(message)
-
-
-def menu(message):
-    keyboard = types.ReplyKeyboardMarkup(True, False)
-    btn1 = types.KeyboardButton('А куда чаще смотрят билеты?')
-    btn2 = types.KeyboardButton('А куда чаще летают?')
-    btn3 = types.KeyboardButton('Знаю когда, но куда?')
-    btn4 = types.KeyboardButton('Знаю куда, но когда?')
-    btn5 = types.KeyboardButton('А что по курсу валют?')
-    keyboard.add(btn1)
-    keyboard.add(btn2)
-    keyboard.add(btn3)
-    keyboard.add(btn4)
-    keyboard.add(btn5)
-
-    bot.send_message(message.from_user.id, "Давай куда-нибудь уедем!", reply_markup=keyboard)
 
 
 def get_companies(message):
@@ -283,17 +243,16 @@ def get_often(message):
         if message.location:
             latitude = message.location.latitude
             longitude = message.location.longitude
-            data = api.getDataByLocation(latitude, longitude)
-            if data and data["code"] in AIRPORTS:
-                airport_item = data["code"]
+            data = [(math.sqrt((x["coordinates"]["lon"] - longitude) ** 2 + (x["coordinates"]["lat"] - latitude) ** 2),
+                     code) if x["coordinates"] and x["coordinates"]["lat"] else (999999999, "")
+                    for code, x in AIRPORTS.items()]
+            data.sort()
+            data = data[0]
+            if data:
+                airport_item = data[1]
                 name = AIRPORTS[airport_item]["name"]
-                meters = int(data["distance_meters"])
-                if meters < 1000:
-                    km = "меньше километра"
-                else:
-                    km = str(meters // 1000) + ' километров'
                 bot.send_message(message.from_user.id,
-                                 f"Я нашёл тебя!\n\nБлижайший аэропорт к тебе - {name}. Тебе до него всего {km}.\n\n"
+                                 f"Я нашёл тебя!\n\nБлижайший аэропорт/вокзал к тебе - {name}.\n\n"
                                  f"Сейчас посмотрим, куда тебя отправить.")
             else:
                 bot.send_message(message.from_user.id, "Что-то пошло не так")
