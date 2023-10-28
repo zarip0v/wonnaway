@@ -8,8 +8,9 @@ from api import api
 
 load_dotenv()
 bot = telebot.TeleBot(os.getenv('BOT_TOKEN'))
+full_path = os.path.realpath(__file__)
 
-with open('data/airports.json', 'r') as f:
+with open(os.path.dirname(full_path) + '/data/airports.json', 'r') as f:
     airports_clean = json.loads(f.read())
 f.close()
 AIRPORTS = {}
@@ -22,7 +23,7 @@ for airport in airports_clean:
 del airport
 del airports_clean
 
-with open('data/cities.json', 'r') as f:
+with open(os.path.dirname(full_path) + '/data/cities.json', 'r') as f:
     cities_clean = json.loads(f.read())
 f.close()
 CITIES = {}
@@ -34,7 +35,7 @@ for city in cities_clean:
 del city
 del cities_clean
 
-with open('data/countries.json', 'r') as f:
+with open(os.path.dirname(full_path) + '/data/countries.json', 'r') as f:
     countries_clean = json.loads(f.read())
 f.close()
 COUNTRIES = {}
@@ -42,7 +43,7 @@ for country in countries_clean:
     COUNTRIES[country["code"]] = {
         "name": country["name_translations"]["ru"]
     }
-with open('data/country_cases.json', 'r') as f:
+with open(os.path.dirname(full_path) + '/data/country_cases.json', 'r') as f:
     countries_clean = json.loads(f.read())
 f.close()
 for country in countries_clean.keys():
