@@ -1,5 +1,4 @@
 import telebot
-import json
 import dateutil.parser
 import os
 import math
