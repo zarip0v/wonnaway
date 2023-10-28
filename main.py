@@ -308,7 +308,7 @@ def get_often(message):
             menu(message)
 
         data = api.getTopDirections(airport_item)
-        if data:
+        if airport_item != "" and data:
             text = "Самые популярные направления для твоего города:\n\n"
             shown = 0
             for city_item in data["data"].values():
